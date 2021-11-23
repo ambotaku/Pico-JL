@@ -1115,9 +1115,9 @@ Discarded input sections
                 0x0000000000000000        0x8 CMakeFiles/pico-jl.dir/home/klauszerbe/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
  .rodata.__bi_65.4736
                 0x0000000000000000        0xc CMakeFiles/pico-jl.dir/home/klauszerbe/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
- .text          0x0000000000000000        0x0 /tmp/ccLdBMx2.o
- .data          0x0000000000000000        0x0 /tmp/ccLdBMx2.o
- .bss           0x0000000000000000        0x0 /tmp/ccLdBMx2.o
+ .text          0x0000000000000000        0x0 /tmp/ccfqZTM0.o
+ .data          0x0000000000000000        0x0 /tmp/ccfqZTM0.o
+ .bss           0x0000000000000000        0x0 /tmp/ccfqZTM0.o
  .data          0x0000000000000000        0x0 /usr/lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/libgcc.a(_dvmd_tls.o)
  .bss           0x0000000000000000        0x0 /usr/lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/libgcc.a(_dvmd_tls.o)
  .text          0x0000000000000000       0x10 /usr/lib/gcc/arm-none-eabi/7.3.1/../../../arm-none-eabi/lib/thumb/v6-m/libg.a(lib_a-atexit.o)
@@ -1299,7 +1299,7 @@ LOAD /usr/lib/gcc/arm-none-eabi/7.3.1/../../../arm-none-eabi/lib/thumb/v6-m/crt0
 .boot2          0x0000000010000000      0x100
                 0x0000000010000000                __boot2_start__ = .
  *(.boot2)
- .boot2         0x0000000010000000      0x100 /tmp/ccLdBMx2.o
+ .boot2         0x0000000010000000      0x100 /tmp/ccfqZTM0.o
                 0x0000000010000100                __boot2_end__ = .
                 0x0000000000000001                ASSERT (((__boot2_end__ - __boot2_start__) == 0x100), ERROR: Pico second stage bootloader must be 256 bytes in size)
 
@@ -2638,7 +2638,7 @@ LOAD CMakeFiles/pico-jl.dir/home/klauszerbe/pico/pico-sdk/src/rp2_common/pico_st
 LOAD CMakeFiles/pico-jl.dir/home/klauszerbe/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
 LOAD CMakeFiles/pico-jl.dir/home/klauszerbe/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
 LOAD CMakeFiles/pico-jl.dir/home/klauszerbe/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
-LOAD /tmp/ccLdBMx2.o
+LOAD /tmp/ccfqZTM0.o
 LOAD /usr/lib/gcc/arm-none-eabi/7.3.1/../../../arm-none-eabi/lib/thumb/v6-m/libstdc++.a
 LOAD /usr/lib/gcc/arm-none-eabi/7.3.1/../../../arm-none-eabi/lib/thumb/v6-m/libm.a
 START GROUP
@@ -2740,7 +2740,7 @@ OUTPUT(pico-jl.elf elf32-littlearm)
  .ARM.attributes
                 0x0000000000000726       0x32 CMakeFiles/pico-jl.dir/home/klauszerbe/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
  .ARM.attributes
-                0x0000000000000758       0x22 /tmp/ccLdBMx2.o
+                0x0000000000000758       0x22 /tmp/ccfqZTM0.o
  .ARM.attributes
                 0x000000000000077a       0x1e /usr/lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/libgcc.a(_dvmd_tls.o)
  .ARM.attributes
