@@ -1,7 +1,3 @@
-/**
- * @file jl.c
- * @author Joe Wingbermuehle
- */
 
 #include "jl.h"
 #include "jl-context.h"
@@ -9,8 +5,8 @@
 #include "jl-scope.h"
 #include "jl-func.h"
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #include <stdio.h>
 
 static JLValue *EvalLambda(JLContext *context,

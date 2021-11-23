@@ -5,7 +5,7 @@
 
 #include "jl-value.h"
 #include "jl-context.h"
-#include <string.h>
+#include <cstring>
 
 JLValue *CreateValue(JLContext *context, const char *name, JLValueType tag)
 {

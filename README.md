@@ -1,6 +1,25 @@
 
-JL
+Pico-JL
 ==============================================================================
+This is a fork of Joe Wingbermühle's JL interpreter for Raspberry Pi Pico.
+
+The Raspberry Pi Pico is mostly used with a powerful (for that kind of device) MicroPython interpreter, but I think a Lisp (or Scheme) interpreter like JL allows evaluation of more programming paradigms and solutions where Python is reaching some limits or gets uncomfortable at least.
+
+Joe is calling JL a configuration language and that is exactly my purpose, too.
+But what I need is something to configure and control the 26 GPIO-ports and communication
+channels (serial, parallel, i2c, SPI) of that microcontroller.
+
+For that purpose I will replace or add decimal number support for 32/64 bit integers and all needed logical
+bit operators, shifts etc. Unfortunately the Pico SDK does not support a filesystem for the 2 MB Flash
+free flash memory, but maybe I can add file acces via SPI to a SD-card with FAT filesystem in future.
+Until that, any applications need to be uploaded & downloaded via serial.
+
+I needed to rearrange Joe's code basis (now complete in src-folder and CMake based) and port it to C++ (somewhat), because the Pico SDK supports no C standard-libraries, especially malloc, realloc and free from stdlib.h don't work and stdio.h is missing line input functions (e.g. getline), but my current commit got JL to work on the Pico at least.
+
+So Joe's following language description is the current state for RP2040 microcontrollers, too.
+
+---------------------------------------------------------------------
+
 This is a small, embeddable LISP-like language.  The intended use is for
 configuration files where it is desirable to be able to have complex
 configurations (JWM, for example).

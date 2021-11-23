@@ -9,8 +9,8 @@
 #include "jl-value.h"
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
+#include <cstdlib>
+#include <cstdarg>
 
 #define BLOCK_SIZE   8192
 
