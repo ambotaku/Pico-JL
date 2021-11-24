@@ -1,25 +1,42 @@
 /**
  * @file jli.c
- * @authoer Joe Wingbermuehle
- *
- * This is a REPL for interfacing with JL on the command line.
+ * @author Joe Wingbermuehle
+ * @author Klaus Zerbe 
+ * 
+ * This is a REPL for interfacing with JL
+ * - accesible via OS commandline of GPIO port (USB or UART) of RP2040
  *
  */
 
+#ifdef RP2040
 #include <pico/stdlib.h>
+#endif
 
 #include "jl.h"
 
 #include <stdio.h>
-#include <cstdlib>
-#include <string.h>
+#include <cstdlib>   // can't use C-stdlib.h for RP2040 SDK
+#include <string.h>   // use C++ libs for RP2040 SDK
 
 const uint startLineLength = 8; // the linebuffer will automatically grow for longer lines
 const char eof = 255;           // EOF in stdio.h -is -1, but getchar returns int 255 to avoid blocking
 
-static char * getLine(bool fullDuplex = true, char lineBreak = '\n') {
-    // th line buffer
-    // will allocated by pico_malloc module if <cstdlib> gets included
+#ifdef RP2040
+#define LINE_END '\r'
+#define DUPLEX true
+#else 
+#define LINE_END '\n'
+#define DUPLEX false
+#endif
+
+/*
+ *  read a line of any  length from stdio (can grow to memory available)
+ *
+ *  @param fullDuplex input will echo on entry (terminal mode) when false
+ *  @param linebreak defaults to "\n", but "\r" may be needed for terminals
+ *  @return entered line on heap - don't forget calling free() to get memory back
+ */
+static char * getLine(bool fullDuplex = DUPLEX, char lineBreak = LINE_END) {
     char * pStart = (char*)malloc(startLineLength); 
     char * pPos = pStart;  // next character position
     size_t maxLen = startLineLength; // current max buffer size
@@ -31,16 +48,22 @@ static char * getLine(bool fullDuplex = true, char lineBreak = '\n') {
     }
 
     while(1) {
-        c = getchar(); // expect next character entry
-        if(c == eof || c == lineBreak) {
+         c = getchar(); // expect next character entry
+         if(c == eof || c == lineBreak) {
             break;     // non blocking exit
-        }
+         } else if (c == '\b' && (pPos > pStart)) {
+            --pPos;
+            if (fullDuplex) {
+               printf("\b \b");               
+            }
+            continue;
+         }
 
         if (fullDuplex) {
             putchar(c); // echo for fullDuplex terminals
         }
 
-        if(--len == 0) { // allow larger buffer
+        if (--len == 0) { // allow larger buffer
             len = maxLen;
             // double the current line buffer size
             char *pNew  = (char*)realloc(pStart, maxLen *= 2);
@@ -59,7 +82,7 @@ static char * getLine(bool fullDuplex = true, char lineBreak = '\n') {
         }
     }
 
-    *pPos = '\0';   // set string end mark
+    *pPos = '\0';   // set string end
     return pStart;
 }
 
@@ -104,7 +127,9 @@ int main(int argc, char *argv[])
    size_t cap = 0;
    char *filename = NULL;
 
+#ifdef RP2040
    stdio_init_all();
+#endif
    printf("Pico JL Interpreter v%d.%d\n", JL_VERSION_MAJOR, JL_VERSION_MINOR);
    printf("Type ^D to exit\n");
 
@@ -116,7 +141,7 @@ int main(int argc, char *argv[])
       fflush(stdout);
       const ssize_t len = 0;
 
-      line = getLine(true, '\r');
+      line = getLine();
       if(strlen(line) > 0) {
          printf("\r\n");
          

@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 pico_sdk_init()
 
+add_definitions(-DRP2040)
+
 add_executable(${CMAKE_PROJECT_NAME}
     src/jl-context.cpp
     src/jl-func.cpp

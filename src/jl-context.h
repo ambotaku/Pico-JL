@@ -1,6 +1,9 @@
 /**
  * @file jl-context.h
- * @author Joe Wingbermuehle
+ * @authors Joe Wingbermuehle
+ * @authors Klaus Zerbe
+ * 
+ * main node definitions
  */
 
 #ifndef JL_CONTEXT_H

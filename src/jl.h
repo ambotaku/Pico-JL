@@ -3,7 +3,7 @@
  * @author Joe Wingbermuehle
  *
  * Public interface to the JL interpreter.
- *
+ * (interpreter main header)
  */
 
 #ifndef JL_H
