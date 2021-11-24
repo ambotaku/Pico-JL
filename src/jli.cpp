@@ -17,7 +17,7 @@
 const uint startLineLength = 8; // the linebuffer will automatically grow for longer lines
 const char eof = 255;           // EOF in stdio.h -is -1, but getchar returns int 255 to avoid blocking
 
-static char * getLine(bool fullDuplex = true, bool stripLineBreak = true, char lineBreak = '\r') {
+static char * getLine(bool fullDuplex = true, char lineBreak = '\n') {
     // th line buffer
     // will allocated by pico_malloc module if <cstdlib> gets included
     char * pStart = (char*)malloc(startLineLength); 
@@ -32,7 +32,7 @@ static char * getLine(bool fullDuplex = true, bool stripLineBreak = true, char l
 
     while(1) {
         c = getchar(); // expect next character entry
-        if(c == eof) {
+        if(c == eof || c == lineBreak) {
             break;     // non blocking exit
         }
 
@@ -59,15 +59,10 @@ static char * getLine(bool fullDuplex = true, bool stripLineBreak = true, char l
         }
     }
 
-   if (stripLineBreak) {
-      if (pPos > pStart && *(--pPos) == lineBreak) {
-         *pPos ='\0';
-      }
-   }
-
     *pPos = '\0';   // set string end mark
     return pStart;
 }
+
 
 static struct JLValue *PrintFunc(struct JLContext *context,
                                  struct JLValue *args,
