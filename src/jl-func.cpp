@@ -52,6 +52,10 @@ static JLValue *IsNumberFunc(JLContext *context, JLValue *args, void *extra);
 static JLValue *IsStringFunc(JLContext *context, JLValue *args, void *extra);
 static JLValue *IsListFunc(JLContext *context, JLValue *args, void *extra);
 static JLValue *IsNullFunc(JLContext *context, JLValue *args, void *extra);
+static JLValue *StrToIntFunc(JLContext *context, JLValue *args, void *extra);
+static JLValue *IntToStrFunc(JLContext *context, JLValue *args, void *extra);
+static char* itoa(NUMBER_TYPE num, int base);
+
 
 static InternalFunctionNode INTERNAL_FUNCTIONS[] = {
    { "=",         CompareFunc    },
@@ -74,6 +78,8 @@ static InternalFunctionNode INTERNAL_FUNCTIONS[] = {
    { "~",         BitNotFunc     },
    { "<<",        BitShiftLeftFunc },
    { ">>",        BitShiftRightFunc },
+   { "int",       StrToIntFunc   },
+   { "str",       IntToStrFunc   },
    { "begin",     BeginFunc      },
    { "cons",      ConsFunc       },
    { "define",    DefineFunc     },
@@ -352,6 +358,49 @@ JLValue *BitNotFunc(JLContext *context, JLValue *args, void *extra)
       return NULL;
    }
    result = JLDefineNumber(context, NULL, ~va->value.number);
+   return result;
+}
+
+JLValue *StrToIntFunc(JLContext *context, JLValue *args, void *extra) {
+   if(args->next == NULL || args->next->next == NULL) {
+      TooFewArgumentsError(context, args);
+      return NULL;
+   }
+
+   JLValue *va = JLEvaluate(context, args->next);
+   JLValue *vb = JLEvaluate(context, args->next->next);
+   JLValue *result = NULL;
+   char *pEnd = NULL;
+
+   if (!va || va->tag != JLVALUE_STRING || !vb || vb->tag != JLVALUE_NUMBER) {
+      InvalidArgumentError(context, args);
+      JLRelease(context, va);
+      return NULL;
+   }
+
+   result = JLDefineNumber(context, NULL, strtol(va->value.str, &pEnd, vb->value.number));
+   return result;
+}
+
+JLValue *IntToStrFunc(JLContext *context, JLValue *args, void *extra) {
+   if(args->next == NULL || args->next->next == NULL) {
+      TooFewArgumentsError(context, args);
+      return NULL;
+   }
+
+   JLValue *va = JLEvaluate(context, args->next);
+   JLValue *vb = JLEvaluate(context, args->next->next);
+   JLValue *result = NULL;
+   char *pEnd = NULL;
+
+   if (!va || va->tag != JLVALUE_NUMBER || !vb || vb->tag != JLVALUE_NUMBER) {
+      InvalidArgumentError(context, args);
+      JLRelease(context, va);
+      return NULL;
+   }
+   
+   result = CreateValue(context, NULL, JLVALUE_STRING);
+   result->value.str = itoa(va->value.number, vb->value.number);
    return result;
 }
 
@@ -700,5 +749,46 @@ void RegisterFunctions(JLContext *context)
       JLDefineSpecial(context, INTERNAL_FUNCTIONS[i].name,
                       INTERNAL_FUNCTIONS[i].function, NULL);
    }
+}
+
+char* itoa(NUMBER_TYPE num, int base) {
+   uint bufMaxSize = 16;
+   char *pBuf = (char*) malloc(bufMaxSize);
+   bool neg = false;
+   char *pPos = pBuf;
+
+   if (base == 10 && num <0) {
+      num *= -1;
+      neg = true;
+   }
+   for (unsigned rest = num; rest > 1; rest /= base) {
+      if (pPos - pBuf >= bufMaxSize) {
+         char *pNew = (char*) realloc(pBuf, bufMaxSize *= 2);
+         pPos = pNew + (pPos - pBuf);
+         pBuf = pNew; 
+      }
+
+      uint digit = rest % base;
+      if (digit < 10) {
+         *pPos++ = 0x30 + digit;
+      } else {
+         *pPos++ = 0x40 + digit - 9;
+      }
+   }
+
+   if (neg) {
+      *pPos++ = '-';
+   }
+   
+   *pPos = '\0';
+   // reverse string
+   char c;
+   for (int i = 0, j = strlen(pBuf)-1; i<j; i++, j--) {
+      c = pBuf[i];
+      pBuf[i] = pBuf[j];
+      pBuf[j] = c;
+   }
+
+   return pBuf;
 }
 
