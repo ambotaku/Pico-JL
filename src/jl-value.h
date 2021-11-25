@@ -33,7 +33,7 @@ typedef struct JLValue {
       struct JLValue *lst;
       SpecialFunction special;
       char *str;
-      double number;
+      NUMBER_TYPE number;
       void *scope;
    } value;
    struct JLValue *next;

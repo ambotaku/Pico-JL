@@ -116,7 +116,7 @@ void JLDefineSpecial(JLContext *context,
 
 JLValue *JLDefineNumber(JLContext *context,
                         const char *name,
-                        double value)
+                        NUMBER_TYPE value)
 {
    JLValue *result = CreateValue(context, name, JLVALUE_NUMBER);
    result->value.number = value;
@@ -484,7 +484,7 @@ char JLIsNumber(JLValue *value)
    }
 }
 
-double JLGetNumber(JLValue *value)
+NUMBER_TYPE JLGetNumber(JLValue *value)
 {
    return value->value.number;
 }
@@ -531,7 +531,7 @@ void JLPrint(const JLContext *context, const JLValue *value)
    }
    switch(value->tag) {
    case JLVALUE_NUMBER:
-      printf("%g", value->value.number);
+      printf(NUMBER_FMT, value->value.number);
       break;
    case JLVALUE_STRING:
       printf("\"%s\"", value->value.str);

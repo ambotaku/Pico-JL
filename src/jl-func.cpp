@@ -147,7 +147,7 @@ JLValue *CompareFunc(JLContext *context, JLValue *args, void *extra)
    } else {
 
       /* Here we know that va and vb are not nil and are of the same type. */
-      double diff = 0.0;
+      NUMBER_TYPE diff = 0;
       if(va->tag == JLVALUE_NUMBER) {
          diff = va->value.number - vb->value.number;
       } else if(va->tag == JLVALUE_STRING) {
@@ -184,7 +184,7 @@ JLValue *CompareFunc(JLContext *context, JLValue *args, void *extra)
 JLValue *AddFunc(JLContext *context, JLValue *args, void *extra)
 {
    JLValue *vp;
-   double sum = 0.0;
+   NUMBER_TYPE sum = 0;
    for(vp = args->next; vp; vp = vp->next) {
       JLValue *arg = JLEvaluate(context, vp);
       if(arg == NULL || arg->tag != JLVALUE_NUMBER) {
@@ -202,7 +202,7 @@ JLValue *SubFunc(JLContext *context, JLValue *args, void *extra)
 {
    JLValue *vp = args->next;
    JLValue *arg = NULL;
-   double total = 0.0;
+   NUMBER_TYPE total = 0;
 
    arg = JLEvaluate(context, vp);
    if(arg == NULL || arg->tag != JLVALUE_NUMBER) {
@@ -231,7 +231,7 @@ JLValue *SubFunc(JLContext *context, JLValue *args, void *extra)
 JLValue *MulFunc(JLContext *context, JLValue *args, void *extra)
 {
    JLValue *vp;
-   double product = 1.0;
+   NUMBER_TYPE product = 1;
    for(vp = args->next; vp; vp = vp->next) {
       JLValue *arg = JLEvaluate(context, vp);
       if(arg == NULL || arg->tag != JLVALUE_NUMBER) {

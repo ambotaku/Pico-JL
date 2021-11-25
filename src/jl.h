@@ -12,6 +12,9 @@
 #define JL_VERSION_MAJOR   0
 #define JL_VERSION_MINOR   1
 
+#define NUMBER_TYPE int
+#define NUMBER_FMT  "%d"
+
 struct JLValue;
 struct JLContext;
 
@@ -97,7 +100,7 @@ void JLDefineSpecial(struct JLContext *context,
 
 struct JLValue *JLDefineNumber(struct JLContext *context,
                                const char *name,
-                               double value);
+                               NUMBER_TYPE value);
 
 /** Parse an expression.
  * Note that only a single expression is parsed.
@@ -128,7 +131,7 @@ char JLIsNumber(struct JLValue *value);
  * @return The numeric value.
  */
 
-double JLGetNumber(struct JLValue *value);
+NUMBER_TYPE JLGetNumber(struct JLValue *value);
 
 /** Determine if a value is a string.
  * @param value The value to check (NULL is allowed).
