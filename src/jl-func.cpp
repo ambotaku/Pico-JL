@@ -29,6 +29,12 @@ static JLValue *SubFunc(JLContext *context, JLValue *args, void *extra);
 static JLValue *MulFunc(JLContext *context, JLValue *args, void *extra);
 static JLValue *DivFunc(JLContext *context, JLValue *args, void *extra);
 static JLValue *ModFunc(JLContext *context, JLValue *args, void *extra);
+static JLValue *BitAndFunc(JLContext *context, JLValue *args, void *extra);
+static JLValue *BitOrFunc(JLContext *context, JLValue *args, void *extra);
+static JLValue *BitXorFunc(JLContext *context, JLValue *args, void *extra);
+static JLValue *BitNotFunc(JLContext *context, JLValue *args, void *extra);
+static JLValue *BitShiftLeftFunc(JLContext *context, JLValue *args, void *extra);
+static JLValue *BitShiftRightFunc(JLContext *context, JLValue *args, void *extra);
 static JLValue *AndFunc(JLContext *context, JLValue *args, void *extra);
 static JLValue *OrFunc(JLContext *context, JLValue *args, void *extra);
 static JLValue *NotFunc(JLContext *context, JLValue *args, void *extra);
@@ -58,10 +64,16 @@ static InternalFunctionNode INTERNAL_FUNCTIONS[] = {
    { "-",         SubFunc        },
    { "*",         MulFunc        },
    { "/",         DivFunc        },
-   { "mod",       ModFunc        },
+   { "%",       ModFunc        },
    { "and",       AndFunc        },
    { "or",        OrFunc         },
    { "not",       NotFunc        },
+   { "&",         BitAndFunc     },
+   { "|",         BitOrFunc      },
+   { "^",         BitXorFunc     },
+   { "~",         BitNotFunc     },
+   { "<<",        BitShiftLeftFunc },
+   { ">>",        BitShiftRightFunc },
    { "begin",     BeginFunc      },
    { "cons",      ConsFunc       },
    { "define",    DefineFunc     },
@@ -173,7 +185,7 @@ JLValue *CompareFunc(JLContext *context, JLValue *args, void *extra)
    }
 
    if(cond) {
-      result = JLDefineNumber(context, NULL, 1.0);
+      result = JLDefineNumber(context, NULL, 1);
    }
 
    JLRelease(context, va);
@@ -181,22 +193,28 @@ JLValue *CompareFunc(JLContext *context, JLValue *args, void *extra)
    return result;
 }
 
-JLValue *AddFunc(JLContext *context, JLValue *args, void *extra)
-{
-   JLValue *vp;
-   NUMBER_TYPE sum = 0;
-   for(vp = args->next; vp; vp = vp->next) {
-      JLValue *arg = JLEvaluate(context, vp);
-      if(arg == NULL || arg->tag != JLVALUE_NUMBER) {
-         InvalidArgumentError(context, args);
-         JLRelease(context, arg);
-         return NULL;
-      }
-      sum += arg->value.number;
-      JLRelease(context, arg);
-   }
-   return JLDefineNumber(context, NULL, sum);
-}
+#define DEFINE_BIT_ARITHMETIC(name, opr, init)\
+JLValue *name(JLContext *context, JLValue *args, void *extra) {\
+   JLValue *vp;\
+   NUMBER_TYPE sum = init;\
+   for(vp = args->next; vp; vp = vp->next) {\
+      JLValue *arg = JLEvaluate(context, vp);\
+      if(arg == NULL || arg->tag != JLVALUE_NUMBER) {\
+         InvalidArgumentError(context, args);\
+         JLRelease(context, arg);\
+         return NULL;\
+      }\
+      sum opr arg->value.number;\
+      JLRelease(context, arg);\
+   }\
+   return JLDefineNumber(context, NULL, sum);\
+};
+
+DEFINE_BIT_ARITHMETIC(AddFunc, +=, 0)
+DEFINE_BIT_ARITHMETIC(BitAndFunc, &=, -1)
+DEFINE_BIT_ARITHMETIC(BitOrFunc, |=, 0)
+DEFINE_BIT_ARITHMETIC(BitXorFunc, ^=, 0)
+
 
 JLValue *SubFunc(JLContext *context, JLValue *args, void *extra)
 {
@@ -225,7 +243,6 @@ JLValue *SubFunc(JLContext *context, JLValue *args, void *extra)
    }
 
    return JLDefineNumber(context, NULL, total);
-
 }
 
 JLValue *MulFunc(JLContext *context, JLValue *args, void *extra)
@@ -245,73 +262,37 @@ JLValue *MulFunc(JLContext *context, JLValue *args, void *extra)
    return JLDefineNumber(context, NULL, product);
 }
 
-JLValue *DivFunc(JLContext *context, JLValue *args, void *extra)
-{
-   JLValue *va = NULL;
-   JLValue *vb = NULL;
-   JLValue *result = NULL;
-
-   va = JLEvaluate(context, args->next);
-   if(va == NULL || va->tag != JLVALUE_NUMBER) {
-      InvalidArgumentError(context, args);
-      goto div_done;
-   }
-   vb = JLEvaluate(context, args->next->next);
-   if(vb == NULL || vb->tag != JLVALUE_NUMBER) {
-      InvalidArgumentError(context, args);
-      goto div_done;
-   }
-   if(args->next->next->next) {
-      TooManyArgumentsError(context, args);
-      goto div_done;
-   }
-
-   result = JLDefineNumber(context, NULL, va->value.number / vb->value.number);
-
-div_done:
-
-   JLRelease(context, va);
-   JLRelease(context, vb);
-   return result;
-
+#define DEFINE_DIV_ARITHMETIC(name, opr)\
+JLValue *name(JLContext *context, JLValue *args, void *extra)\
+{\
+   JLValue *va = NULL;\
+   JLValue *vb = NULL;\
+   JLValue *result = NULL;\
+   va = JLEvaluate(context, args->next);\
+   if(va == NULL || va->tag != JLVALUE_NUMBER) {\
+      InvalidArgumentError(context, args);\
+      goto div_done;\
+   }\
+   vb = JLEvaluate(context, args->next->next);\
+   if(vb == NULL || vb->tag != JLVALUE_NUMBER) {\
+      InvalidArgumentError(context, args);\
+      goto div_done;\
+   }\
+   if(args->next->next->next) {\
+      TooManyArgumentsError(context, args);\
+      goto div_done;\
+   }\
+   result = JLDefineNumber(context, NULL, va->value.number opr vb->value.number);\
+div_done:\
+   JLRelease(context, va);\
+   JLRelease(context, vb);\
+   return result;\
 }
 
-JLValue *ModFunc(JLContext *context, JLValue *args, void *extra)
-{
-
-   JLValue *va = NULL;
-   JLValue *vb = NULL;
-   JLValue *result = NULL;
-   long temp;
-
-   va = JLEvaluate(context, args->next);
-   if(va == NULL || va->tag != JLVALUE_NUMBER) {
-      InvalidArgumentError(context, args);
-      goto mod_done;
-   }
-   vb = JLEvaluate(context, args->next->next);
-   if(vb == NULL || vb->tag != JLVALUE_NUMBER) {
-      InvalidArgumentError(context, args);
-      goto mod_done;
-   }
-   if(args->next->next->next) {
-      TooManyArgumentsError(context, args);
-      goto mod_done;
-   }
-   temp = (long)vb->value.number;
-   if(temp == 0) {
-      goto mod_done;
-   }
-
-   result = JLDefineNumber(context, NULL, (long)va->value.number % temp);
-
-mod_done:
-
-   JLRelease(context, va);
-   JLRelease(context, vb);
-   return result;
-
-}
+DEFINE_DIV_ARITHMETIC(DivFunc, /)
+DEFINE_DIV_ARITHMETIC(ModFunc, %)
+DEFINE_DIV_ARITHMETIC(BitShiftLeftFunc, <<)
+DEFINE_DIV_ARITHMETIC(BitShiftRightFunc, >>)
 
 JLValue *AndFunc(JLContext *context, JLValue *args, void *extra)
 {
@@ -321,7 +302,7 @@ JLValue *AndFunc(JLContext *context, JLValue *args, void *extra)
          return NULL;
       }
    }
-   return JLDefineNumber(context, NULL, 1.0);
+   return JLDefineNumber(context, NULL, 1);
 }
 
 JLValue *OrFunc(JLContext *context, JLValue *args, void *extra)
@@ -329,7 +310,7 @@ JLValue *OrFunc(JLContext *context, JLValue *args, void *extra)
    JLValue *vp;
    for(vp = args->next; vp; vp = vp->next) {
       if(CheckCondition(context, vp)) {
-         return JLDefineNumber(context, NULL, 1.0);
+         return JLDefineNumber(context, NULL, 1);
       }
    }
    return NULL;
@@ -346,10 +327,32 @@ JLValue *NotFunc(JLContext *context, JLValue *args, void *extra)
       return NULL;
    }
    if(!CheckCondition(context, args->next)) {
-      return JLDefineNumber(context, NULL, 1.0);
+      return JLDefineNumber(context, NULL, 1);
    } else {
       return NULL;
    }
+}
+
+JLValue *BitNotFunc(JLContext *context, JLValue *args, void *extra)
+{
+   if(args->next == NULL) {
+      TooFewArgumentsError(context, args);
+      return NULL;
+   }
+   if(args->next->next != NULL) {
+      TooManyArgumentsError(context, args);
+      return NULL;
+   }
+   JLValue *va = NULL;
+   JLValue *result = NULL;
+   va = JLEvaluate(context, args->next);
+   if(va == NULL || va->tag != JLVALUE_NUMBER) {
+      InvalidArgumentError(context, args);
+      JLRelease(context, va);
+      return NULL;
+   }
+   result = JLDefineNumber(context, NULL, ~va->value.number);
+   return result;
 }
 
 JLValue *BeginFunc(JLContext *context, JLValue *args, void *extra)
@@ -617,7 +620,7 @@ JLValue *IsNumberFunc(JLContext *context, JLValue *args, void *extra)
 
    arg = JLEvaluate(context, args->next);
    if(arg && arg->tag == JLVALUE_NUMBER) {
-      result = JLDefineNumber(context, NULL, 1.0);
+      result = JLDefineNumber(context, NULL, 1);
    }
    JLRelease(context, arg);
    return result;
@@ -639,7 +642,7 @@ JLValue *IsStringFunc(JLContext *context, JLValue *args, void *extra)
 
    arg = JLEvaluate(context, args->next);
    if(arg && arg->tag == JLVALUE_STRING) {
-      result = JLDefineNumber(context, NULL, 1.0);
+      result = JLDefineNumber(context, NULL, 1);
    }
    JLRelease(context, arg);
    return result;
@@ -662,7 +665,7 @@ JLValue *IsListFunc(JLContext *context, JLValue *args, void *extra)
 
    arg = JLEvaluate(context, args->next);
    if(arg && arg->tag == JLVALUE_LIST) {
-      result = JLDefineNumber(context, NULL, 1.0);
+      result = JLDefineNumber(context, NULL, 1);
    }
    JLRelease(context, arg);
    return result;
@@ -683,7 +686,7 @@ JLValue *IsNullFunc(JLContext *context, JLValue *args, void *extra)
 
    arg = JLEvaluate(context, args->next);
    if(arg == NULL) {
-      return JLDefineNumber(context, NULL, 1.0);
+      return JLDefineNumber(context, NULL, 1);
    } else {
       JLRelease(context, arg);
       return NULL;
